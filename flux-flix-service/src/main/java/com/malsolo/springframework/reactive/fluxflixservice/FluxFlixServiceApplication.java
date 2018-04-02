@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.server.RequestPredicates;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -25,12 +28,32 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+
 @SpringBootApplication
 public class FluxFlixServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(FluxFlixServiceApplication.class, args);
 	}
+
+	@Bean
+	RouterFunction<?> routes(FluxFlixService fluxFlixService) {
+	    return RouterFunctions
+            .route(RequestPredicates.GET("/movies"),
+                request -> ok().body(fluxFlixService.all(), Movie.class)
+            )
+            .andRoute(RequestPredicates.GET("/movies/{id}"),
+                request -> ok().body(fluxFlixService.byId(request.pathVariable("id")), Movie.class)
+            )
+            .andRoute(RequestPredicates.GET("/movies/{id}/events"),
+                request -> ok()
+                    .contentType(MediaType.TEXT_EVENT_STREAM)
+                    .body(fluxFlixService.byId(request.pathVariable("id"))
+                        .flatMapMany(fluxFlixService::streamStreams), MovieEvent.class)
+            )
+            ;
+    }
 
 	@Bean
 	CommandLineRunner demo(MovieRepository movieRepository) {
