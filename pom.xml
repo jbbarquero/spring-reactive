@@ -13,6 +13,7 @@
 
 	<modules>
 		<module>flux-flix-service</module>
+		<module>flux-flix-client</module>
 	</modules>
 
 </project>
