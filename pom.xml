@@ -12,6 +12,7 @@
 	<description>Reactive demo project for Spring Boot</description>
 
 	<modules>
+		<module>flux-flix-service</module>
 	</modules>
 
 </project>
